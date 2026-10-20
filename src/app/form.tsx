@@ -10,7 +10,6 @@ import {
   Image,
   Keyboard,
   KeyboardAvoidingView,
-  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -33,20 +32,13 @@ const GENDERS = ['Male', 'Female', 'Other'];
 const COURSES = ['Mobile Dev', 'Web Dev', 'Databases', 'Networking'];
 const LEVELS = ['Year 1', 'Year 2', 'Year 3', 'Year 4'];
 const PRIMARY = '#3c87f7';
-const AVATARS = [
-  { id: 'expo', label: 'Expo', source: require('@/assets/images/icon.png') },
-  { id: 'react', label: 'React', source: require('@/assets/images/react-logo.png') },
-  { id: 'glow', label: 'Glow', source: require('@/assets/images/logo-glow.png') },
-];
 
-// Turns a Date into "YYYY-MM-DD" using the phone's local date
 function formatDate(date: Date) {
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
   return `${date.getFullYear()}-${month}-${day}`;
 }
 
-// Turns "YYYY-MM-DD" back into a Date (local time, so the day doesn't shift)
 function parseDate(text: string) {
   const [year, month, day] = text.split('-').map(Number);
   return new Date(year, month - 1, day);
@@ -55,7 +47,6 @@ function parseDate(text: string) {
 export default function FormScreen() {
   const theme = useTheme();
 
-  // One piece of state per form field
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -70,17 +61,12 @@ export default function FormScreen() {
   const [hoursPerWeek, setHoursPerWeek] = useState(10);
   const [subscribe, setSubscribe] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
-  const [avatar, setAvatar] = useState(AVATARS[0].id);
 
-  // State that controls the screen (not sent with the form)
-  const [showPreview, setShowPreview] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [submittedJson, setSubmittedJson] = useState('');
 
-  // Checkbox-style toggle: add the course if missing, remove it if present
   function toggleCourse(course: string) {
     setCourses((current) =>
       current.includes(course) ? current.filter((c) => c !== course) : [...current, course]
@@ -89,12 +75,10 @@ export default function FormScreen() {
 
   function handleDatePicked(date: Date) {
     setBirthDate(formatDate(date));
-    // Android shows the picker as a pop-up dialog, so close it after a choice
     if (Platform.OS === 'android') setShowDatePicker(false);
   }
 
   function handleSubmit() {
-    // Simple validation before sending
     if (fullName.trim() === '') {
       setError('Please enter your full name.');
       return;
@@ -108,7 +92,6 @@ export default function FormScreen() {
 
     const formData = {
       studentId: STUDENT_ID,
-      avatar,
       fullName,
       email,
       phone,
@@ -126,13 +109,10 @@ export default function FormScreen() {
       submittedAt: new Date().toISOString(),
     };
 
-    // Pretend we are sending to a server: show a spinner for 1 second
     setSubmitting(true);
     setTimeout(() => {
-      const json = JSON.stringify(formData, null, 2);
-      console.log(json);
+      console.log(JSON.stringify(formData, null, 2));
       setSubmitting(false);
-      setSubmittedJson(json); // opens the Modal
     }, 1000);
   }
 
@@ -151,12 +131,8 @@ export default function FormScreen() {
     setHoursPerWeek(10);
     setSubscribe(false);
     setAgreeTerms(false);
-    setAvatar(AVATARS[0].id);
     setError('');
   }
-
-  // The image object for the avatar the user picked
-  const selectedAvatar = AVATARS.find((item) => item.id === avatar) ?? AVATARS[0];
 
   const inputStyle = [
     styles.input,
@@ -174,40 +150,11 @@ export default function FormScreen() {
           style={styles.flex}
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
           <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-            {/* Image */}
             <Image source={require('@/assets/images/react-logo.png')} style={styles.logo} />
             <ThemedText type="subtitle" style={styles.center}>
               Student Sign-up
             </ThemedText>
 
-            {/* ───────── PROFILE PICTURE (Image + Modal) ───────── */}
-
-            <ThemedText type="smallBold">Profile picture</ThemedText>
-            <View style={styles.inlineRow}>
-              {AVATARS.map((item) => {
-                const selected = avatar === item.id;
-                return (
-                  <Pressable
-                    key={item.id}
-                    onPress={() => setAvatar(item.id)}
-                    style={[
-                      styles.avatarOption,
-                      { borderColor: selected ? PRIMARY : theme.backgroundSelected },
-                    ]}>
-                    <Image source={item.source} style={styles.avatarThumb} />
-                  </Pressable>
-                );
-              })}
-              <TouchableOpacity
-                onPress={() => setShowPreview(true)}
-                style={[styles.smallButton, { backgroundColor: theme.backgroundSelected }]}>
-                <ThemedText type="small">Preview</ThemedText>
-              </TouchableOpacity>
-            </View>
-
-            {/* ───────── TEXT INPUTS ───────── */}
-
-            {/* Read-only text */}
             <ThemedText type="smallBold">Student ID (read-only)</ThemedText>
             <TextInput
               style={[inputStyle, styles.readOnly]}
@@ -215,7 +162,6 @@ export default function FormScreen() {
               editable={false}
             />
 
-            {/* Plain text */}
             <ThemedText type="smallBold">Full name *</ThemedText>
             <TextInput
               style={inputStyle}
@@ -226,7 +172,6 @@ export default function FormScreen() {
               autoCapitalize="words"
             />
 
-            {/* Email */}
             <ThemedText type="smallBold">Email</ThemedText>
             <TextInput
               style={inputStyle}
@@ -239,7 +184,6 @@ export default function FormScreen() {
               autoCorrect={false}
             />
 
-            {/* Phone */}
             <ThemedText type="smallBold">Phone</ThemedText>
             <TextInput
               style={inputStyle}
@@ -250,7 +194,6 @@ export default function FormScreen() {
               keyboardType="phone-pad"
             />
 
-            {/* Number */}
             <ThemedText type="smallBold">Age</ThemedText>
             <TextInput
               style={inputStyle}
@@ -262,7 +205,6 @@ export default function FormScreen() {
               maxLength={3}
             />
 
-            {/* URL */}
             <ThemedText type="smallBold">Website</ThemedText>
             <TextInput
               style={inputStyle}
@@ -275,7 +217,6 @@ export default function FormScreen() {
               autoCorrect={false}
             />
 
-            {/* Password + show/hide with TouchableOpacity */}
             <ThemedText type="smallBold">Password</ThemedText>
             <View style={styles.inlineRow}>
               <TextInput
@@ -294,7 +235,6 @@ export default function FormScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* Multiline (textarea) */}
             <ThemedText type="smallBold">Short bio</ThemedText>
             <TextInput
               style={[inputStyle, styles.textArea]}
@@ -307,9 +247,6 @@ export default function FormScreen() {
               textAlignVertical="top"
             />
 
-            {/* ───────── PICKERS & CHOICES ───────── */}
-
-            {/* Date picker (native) / typed date (web) */}
             <ThemedText type="smallBold">Date of birth</ThemedText>
             {Platform.OS === 'web' ? (
               <TextInput
@@ -340,7 +277,6 @@ export default function FormScreen() {
               </>
             )}
 
-            {/* Radio group: only one option can be selected */}
             <ThemedText type="smallBold">Gender</ThemedText>
             <View style={styles.row}>
               {GENDERS.map((option) => {
@@ -363,7 +299,6 @@ export default function FormScreen() {
               })}
             </View>
 
-            {/* Dropdown (Picker) */}
             <ThemedText type="smallBold">Level of study</ThemedText>
             <View style={[boxStyle, styles.pickerBox]}>
               <Picker
@@ -377,7 +312,6 @@ export default function FormScreen() {
               </Picker>
             </View>
 
-            {/* Checkbox group inside a horizontal FlatList */}
             <ThemedText type="smallBold">Courses of interest</ThemedText>
             <FlatList
               data={COURSES}
@@ -397,7 +331,6 @@ export default function FormScreen() {
               )}
             />
 
-            {/* Slider */}
             <ThemedText type="smallBold">Study hours per week: {hoursPerWeek}</ThemedText>
             <Slider
               style={styles.slider}
@@ -411,7 +344,6 @@ export default function FormScreen() {
               thumbTintColor={PRIMARY}
             />
 
-            {/* Switch: an on/off value */}
             <View style={styles.switchRow}>
               <ThemedText type="smallBold">Subscribe to newsletter</ThemedText>
               <Switch
@@ -421,7 +353,6 @@ export default function FormScreen() {
               />
             </View>
 
-            {/* Single checkbox */}
             <Pressable style={styles.inlineRow} onPress={() => setAgreeTerms(!agreeTerms)}>
               <Checkbox
                 value={agreeTerms}
@@ -431,12 +362,8 @@ export default function FormScreen() {
               <ThemedText type="small">I agree to the terms and conditions *</ThemedText>
             </Pressable>
 
-            {/* Validation message */}
             {error !== '' && <ThemedText style={styles.error}>{error}</ThemedText>}
 
-            {/* ───────── BUTTONS ───────── */}
-
-            {/* Pressable (custom button) + ActivityIndicator */}
             <Pressable
               onPress={handleSubmit}
               disabled={submitting}
@@ -448,45 +375,9 @@ export default function FormScreen() {
               )}
             </Pressable>
 
-            {/* Built-in Button */}
             <Button title="Reset" onPress={handleReset} color="#888888" />
           </ScrollView>
         </KeyboardAvoidingView>
-
-        {/* Modal 1: big preview of the chosen profile picture */}
-        <Modal
-          visible={showPreview}
-          transparent
-          animationType="slide"
-          onRequestClose={() => setShowPreview(false)}>
-          <View style={styles.modalBackdrop}>
-            <ThemedView style={[styles.modalCard, styles.centerItems]}>
-              <ThemedText type="smallBold">Profile picture: {selectedAvatar.label}</ThemedText>
-              <Image source={selectedAvatar.source} style={styles.previewImage} resizeMode="contain" />
-              <Button title="Close" onPress={() => setShowPreview(false)} color={PRIMARY} />
-            </ThemedView>
-          </View>
-        </Modal>
-
-        {/* Modal 2: shows the submitted data with the profile picture */}
-        <Modal
-          visible={submittedJson !== ''}
-          transparent
-          animationType="fade"
-          onRequestClose={() => setSubmittedJson('')}>
-          <View style={styles.modalBackdrop}>
-            <ThemedView style={styles.modalCard}>
-              <Image source={selectedAvatar.source} style={styles.modalAvatar} />
-              <ThemedText type="smallBold" style={styles.center}>
-                Welcome, {fullName}! (data also printed in the console)
-              </ThemedText>
-              <ScrollView style={styles.modalScroll}>
-                <ThemedText type="code">{submittedJson}</ThemedText>
-              </ScrollView>
-              <Button title="Close" onPress={() => setSubmittedJson('')} color={PRIMARY} />
-            </ThemedView>
-          </View>
-        </Modal>
       </SafeAreaView>
     </ThemedView>
   );
@@ -619,46 +510,5 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.7,
-  },
-  modalBackdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    padding: Spacing.four,
-  },
-  modalCard: {
-    borderRadius: Spacing.three,
-    padding: Spacing.four,
-    gap: Spacing.three,
-    maxHeight: '80%',
-    width: '100%',
-    maxWidth: 500,
-    alignSelf: 'center',
-  },
-  modalScroll: {
-    flexGrow: 0,
-  },
-  centerItems: {
-    alignItems: 'center',
-  },
-  avatarOption: {
-    borderWidth: 3,
-    borderRadius: 40,
-    padding: 2,
-  },
-  avatarThumb: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-  },
-  previewImage: {
-    width: 220,
-    height: 220,
-  },
-  modalAvatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    alignSelf: 'center',
   },
 });
